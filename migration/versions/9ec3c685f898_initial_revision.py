@@ -1,8 +1,8 @@
 """Initial revision
 
-Revision ID: 87f91e966f79
+Revision ID: 9ec3c685f898
 Revises: 
-Create Date: 2024-10-29 15:42:57.449094
+Create Date: 2024-10-29 18:54:41.514995
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '87f91e966f79'
+revision: str = '9ec3c685f898'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -37,10 +37,11 @@ def upgrade() -> None:
     )
     op.create_table('vk_users',
     sa.Column('vk_id', sa.Integer(), nullable=False),
+    sa.Column('gender', sa.Enum('female', 'male', name='genderenum', create_type=False), nullable=False),
     sa.Column('full_name', sa.String(), nullable=False),
     sa.Column('city', sa.String(), nullable=True),
     sa.Column('education', sa.String(), nullable=True),
-    sa.Column('family_status', sa.String(), nullable=True),
+    sa.Column('family_status', sa.Enum('not_selected', 'single_female', 'single_male', 'has_boyfriend', 'has_girlfriend', 'engaged_female', 'engaged_male', 'married_female', 'married_male', 'in_love_female', 'in_love_male', 'active_search', 'civil_marriage', name='familystatusenum', create_type=False), nullable=False),
     sa.Column('friends', sa.ARRAY(sa.Integer()), nullable=False),
     sa.Column('groups', sa.ARRAY(sa.String()), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
@@ -111,5 +112,7 @@ def downgrade() -> None:
     op.drop_table('tg_users')
     op.drop_table('chats')
     # ### end Alembic commands ###
-    op.execute('DROP TYPE IF EXISTS vkactionenum')
+    op.execute('DROP TYPE IF EXISTS genderenum')
+    op.execute('DROP TYPE IF EXISTS familystatusenum')
     op.execute('DROP TYPE IF EXISTS tgactionenum')
+    op.execute('DROP TYPE IF EXISTS vkactionenum')

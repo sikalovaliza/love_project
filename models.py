@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy import ForeignKey, Text, Integer, String, ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Base
-from sql_enums import VkActionEnum, TgActionEnum
+from sql_enums import VkActionEnum, TgActionEnum, FamilyStatusEnum, GenderEnum
 
 class User(Base):
   __tablename__ = 'users'
@@ -15,10 +15,11 @@ class VkUser(Base):
   __tablename__ = 'vk_users'
 
   vk_id: Mapped[int] = mapped_column(primary_key=True)
+  gender: Mapped[GenderEnum]
   full_name: Mapped[str]
   city: Mapped[str | None]
   education: Mapped[str | None]
-  family_status: Mapped[str | None]
+  family_status: Mapped[FamilyStatusEnum]
   friends: Mapped[list[int]] = mapped_column(ARRAY(Integer))
   groups: Mapped[list[str]] = mapped_column(ARRAY(String))
 
@@ -57,7 +58,7 @@ class Chat(Base):
 
 class TgInteraction(Base):
   __tablename__ = 'tg_interactions'
-  
+
   id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
   chat_id: Mapped[int] = mapped_column(ForeignKey('chats.chat_id'))
   action: Mapped[TgActionEnum]
