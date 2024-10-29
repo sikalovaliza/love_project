@@ -1,1 +1,0 @@
-DATABASE_URL = "postgresql://tanya:123456@localhost/social_media_db"
