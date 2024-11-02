@@ -13,6 +13,7 @@ class TgActionEnum(str, enum.Enum):
     react = "react"
     message = "message"
     add_user = "add_user"
+    left_user = "left_user"
 
 class FamilyStatusEnum(str, enum.Enum):
   not_selected = "не выбрано"

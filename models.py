@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import ForeignKey, Text, Integer, String, ARRAY
+from sqlalchemy import BigInteger, ForeignKey, Text, Integer, String, ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Base
 from sql_enums import VkActionEnum, TgActionEnum, FamilyStatusEnum, GenderEnum
@@ -46,21 +46,21 @@ class Post(Base):
 class TgUser(Base):
   __tablename__ = 'tg_users'
 
-  tg_id: Mapped[int] = mapped_column(primary_key=True)
+  tg_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
   user_name: Mapped[str]
 
 class Chat(Base):
   __tablename__ = 'chats'
 
-  chat_id: Mapped[int] = mapped_column(primary_key=True)
-  chat_name: Mapped[str]
+  #chat_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+  chat_name: Mapped[str] = mapped_column(primary_key=True)
   users_count: Mapped[int]
 
 class TgInteraction(Base):
   __tablename__ = 'tg_interactions'
 
-  id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-  chat_id: Mapped[int] = mapped_column(ForeignKey('chats.chat_id'))
+  id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+  chat_name: Mapped[str] = mapped_column(ForeignKey('chats.chat_name'))
   action: Mapped[TgActionEnum]
   action_from: Mapped[int] = mapped_column(ForeignKey('tg_users.tg_id'))
   action_to: Mapped[int | None] = mapped_column(ForeignKey('tg_users.tg_id'))
