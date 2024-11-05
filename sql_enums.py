@@ -7,13 +7,16 @@ class GenderEnum(str, enum.Enum):
 class VkActionEnum(str, enum.Enum):
     like = "like"
     comment = "comment"
+    post = "post"
 
 class TgActionEnum(str, enum.Enum):
     tag = "tag"
     react = "react"
     message = "message"
     add_user = "add_user"
-    left_user = "left_user"
+    reply = "reply"
+    delete = "delete"
+    forward = "forward"
 
 class FamilyStatusEnum(str, enum.Enum):
   not_selected = "не выбрано"

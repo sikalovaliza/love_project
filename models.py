@@ -9,7 +9,7 @@ class User(Base):
 
   id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
   vk_id: Mapped[int] = mapped_column(ForeignKey('vk_users.vk_id'))
-  tg_id: Mapped[int] = mapped_column(ForeignKey('tg_users.tg_id'))
+  tg_id: Mapped[str] = mapped_column(ForeignKey('tg_users.tg_id'))
 
 class VkUser(Base):
   __tablename__ = 'vk_users'
@@ -27,7 +27,7 @@ class VkInteraction(Base):
   __tablename__ = 'vk_interactions'
 
   id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-  post_id: Mapped[int] = mapped_column(ForeignKey('posts.post_id'))
+  post_id: Mapped[int] = mapped_column(ForeignKey('vk_posts.post_id'))
   action: Mapped[VkActionEnum]
   action_from: Mapped[int] = mapped_column(ForeignKey('vk_users.vk_id'))
   action_to: Mapped[int | None] = mapped_column(ForeignKey('vk_users.vk_id'))
@@ -35,7 +35,7 @@ class VkInteraction(Base):
   time: Mapped[datetime]
 
 class Post(Base):
-  __tablename__ = 'posts'
+  __tablename__ = 'vk_posts'
 
   post_id: Mapped[int] = mapped_column(Integer, primary_key=True)
   image: Mapped[str | None]
@@ -46,23 +46,38 @@ class Post(Base):
 class TgUser(Base):
   __tablename__ = 'tg_users'
 
-  tg_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+  tg_id: Mapped[str] = mapped_column(primary_key=True)
   user_name: Mapped[str]
 
 class Chat(Base):
-  __tablename__ = 'chats'
+  __tablename__ = 'tg_chats'
 
-  #chat_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-  chat_name: Mapped[str] = mapped_column(primary_key=True)
+  chat_id: Mapped[str] = mapped_column(primary_key=True)
+  chat_name: Mapped[str]
   users_count: Mapped[int]
 
+class TgStatistics(Base):
+  __tablename__ = 'tg_statistics'
+
+  id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+  reaction: Mapped[str]
+  count: Mapped[int]
+
+class TgMessage(Base):
+  __tablename__ = 'tg_messages'
+
+  id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+  text: Mapped[str]
+  statistics: Mapped[int] = mapped_column(ForeignKey('tg_statistics.id'))
+  
 class TgInteraction(Base):
   __tablename__ = 'tg_interactions'
 
-  id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-  chat_name: Mapped[str] = mapped_column(ForeignKey('chats.chat_name'))
+  id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+  chat_id: Mapped[str] = mapped_column(ForeignKey('tg_chats.chat_id'))
   action: Mapped[TgActionEnum]
-  action_from: Mapped[int] = mapped_column(ForeignKey('tg_users.tg_id'))
-  action_to: Mapped[int | None] = mapped_column(ForeignKey('tg_users.tg_id'))
+  action_from: Mapped[str] = mapped_column(ForeignKey('tg_users.tg_id'))
+  action_to: Mapped[str | None] = mapped_column(ForeignKey('tg_users.tg_id'))
+  reply_on: Mapped[int | None] = mapped_column(ForeignKey('tg_messages.id'))
+  message_id: Mapped[int | None] = mapped_column(ForeignKey('tg_messages.id'))
   time: Mapped[datetime]
-  text: Mapped[str | None] = mapped_column(Text)
