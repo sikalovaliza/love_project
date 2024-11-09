@@ -1,6 +1,7 @@
 import asyncio
 from typing import List
-from dao.dao import UserDAO, VkUserDAO, VkInteractionDAO, PostDAO, TgUserDAO, ChatDAO, TgInteractionDAO
+from dao.dao import TgMessageDAO, TgStatisticsDAO, UserDAO, VkUserDAO, VkInteractionDAO, PostDAO, TgUserDAO, ChatDAO, TgInteractionDAO
+from models import TgStatistics
 from sql_enums import VkActionEnum, TgActionEnum, FamilyStatusEnum, GenderEnum
 from database import connection
 from asyncio import run
@@ -61,6 +62,18 @@ async def add_one_action_tg_inter(user_data: dict, session: AsyncSession):
     new_user = await TgInteractionDAO.add(session=session, **user_data)
     print(f"{new_user.chat_id}")
     return new_user.chat_id
+
+@connection
+async def add_one_tg_mess(user_data: dict, session: AsyncSession):
+    new_mess = await TgMessageDAO.add(session=session, **user_data)
+    print(f"{new_mess.id}")
+    return new_mess.id
+
+@connection
+async def add_one_tg_stat(user_data: dict, session: AsyncSession):
+    new_mess = await TgStatisticsDAO.add(session=session, **user_data)
+    print(f"{new_mess.id}")
+    return new_mess.id
 
 #run(add_many_users_tg(users_data=tg_users, dao=TgUserDAO))
 
