@@ -34,7 +34,7 @@ def connection(method):
 
     return wrapper
 
-def trigger_to_hist_table(table_name_last: str, column_names: set):
+'''def trigger_to_hist_table(table_name_last: str, column_names: set):
     table_name_hist = table_name_last.replace('_last', '_hist')
     return text(f"""
                 CREATE OR REPLACE TRIGGER {table_name_last}_to_hist_table
@@ -57,4 +57,4 @@ async def create_triggers():
             columns = {column.name for column in table.columns} - {'id'}
             await connection.execute(trigger_to_hist_table(table_name_last=name, column_names=columns))
 
-asyncio.run(create_triggers())
+asyncio.run(create_triggers())'''
