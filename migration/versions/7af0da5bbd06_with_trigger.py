@@ -208,3 +208,7 @@ def downgrade() -> None:
     op.drop_table('tg_chats_last')
     op.drop_table('tg_chats_hist')
     # ### end Alembic commands ###
+    op.execute('DROP TYPE IF EXISTS genderenum')
+    op.execute('DROP TYPE IF EXISTS familystatusenum')
+    op.execute('DROP TYPE IF EXISTS tgactionenum')
+    op.execute('DROP TYPE IF EXISTS vkactionenum')
