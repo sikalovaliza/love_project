@@ -111,17 +111,32 @@ class ChatHist(Base):
 
 class TgStatistics(Base):
   __tablename__ = 'tg_statistics_last'
-
-  id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+  id: Mapped[str] = mapped_column(primary_key=True, autoincrement=True)
+  chat_id: Mapped[str] = mapped_column()
+  message_id: Mapped[str] = mapped_column()
   reaction: Mapped[str]
   count: Mapped[int]
+  __table_args__ = (
+      ForeignKeyConstraint(
+          ['chat_id', 'message_id'],
+          ['tg_messages.chat_id', 'tg_messages.id']
+      )
+  )
+  
 
 class TgStatisticsHist(Base):
   __tablename__ = 'tg_statistics_hist'
-
-  id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+  id: Mapped[str] = mapped_column(primary_key=True, autoincrement=True)
+  message_id: Mapped[int] = mapped_column()
   reaction: Mapped[str]
   count: Mapped[int]
+  __table_args__ = (
+      ForeignKeyConstraint(
+          ['chat_id', 'message_id'],
+          ['tg_messages.chat_id', 'tg_messages.id']
+      )
+  )
+
 
 class TgMessage(Base):
   __tablename__ = 'tg_messages'
@@ -129,7 +144,17 @@ class TgMessage(Base):
   chat_id: Mapped[str] = mapped_column(ForeignKey('tg_chats_last.chat_id'), primary_key=True)
   id: Mapped[str] = mapped_column(primary_key=True)
   text: Mapped[str]
-  statistics: Mapped[int] = mapped_column(ForeignKey('tg_statistics_last.id'))
+  __table_args__ = (
+      ForeignKeyConstraint(
+          ['chat_id', 'id'],
+          ['tg_interactions.chat_id', 'tg_interactions.reply_on_id']
+      ),
+      ForeignKeyConstraint(
+          ['chat_id', 'id'],
+          ['tg_interactions.chat_id', 'tg_interactions.message_id']
+      ),
+  )
+  
   
 class TgInteraction(Base):
   __tablename__ = 'tg_interactions'
@@ -139,19 +164,6 @@ class TgInteraction(Base):
   action: Mapped[TgActionEnum]
   action_from: Mapped[str] = mapped_column(ForeignKey('tg_users_last.tg_id'))
   action_to: Mapped[str | None] = mapped_column(ForeignKey('tg_users_last.tg_id'))
-  reply_on_chat_id: Mapped[str] = mapped_column()
-  reply_on_id: Mapped[str] = mapped_column()
-  message_chat_id: Mapped[str] = mapped_column()
+  reply_on_id: Mapped[str | None] = mapped_column()
   message_id: Mapped[str] = mapped_column()
   time: Mapped[datetime]
-
-  __table_args__ = (
-      ForeignKeyConstraint(
-          ['reply_on_chat_id', 'reply_on_id'],
-          ['tg_messages.chat_id', 'tg_messages.id']
-      ),
-      ForeignKeyConstraint(
-          ['message_chat_id', 'message_id'],
-          ['tg_messages.chat_id', 'tg_messages.id']
-      ),
-  )

@@ -16,8 +16,7 @@ API_HASH = os.getenv('API_HASH')
 API_ID = os.getenv('API_ID')
 
 chats = [
-    'new_love_chat',
-    'this_chat_love'
+   'this_chat_love'
 ]
 
 app = Client(
@@ -85,7 +84,7 @@ async def main():
             print(f"Ошибка при обработке юзера '{username}': {str(e)}")
 
         async for action in app.get_chat_history(chat.id):
-          print(action)
+          #print(action)
           if action.chat.type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
             print(action)
             if action.new_chat_members:
@@ -97,9 +96,6 @@ async def main():
                     'action': TgActionEnum.add_user, 
                     'action_from': str(action.from_user.id), 
                     'action_to': str(member.id), 
-                    'reply_on_chat_id': '0',
-                    'reply_on_id': '0',
-                    'message_chat_id': '0',
                     'message_id': str(action.id),
                     'time': action.date
                   }
@@ -109,16 +105,13 @@ async def main():
                     print(f"Ошибка при обработке действия: {str(e)}")'''
 
             if action.left_chat_member:
-              for member in action.left_chat_members:
+              for member in action.left_chat_member:
                 print(f"{action.left_chat_member.first_name} был удален из чата '{chat.title}' {action.date.strftime('%Y-%m-%d %H:%M:%S')}")
                 new_action={
                   'chat_id': str(chat.id), 
                   'action': TgActionEnum.delete, 
                   'action_from': str(action.from_user.id), 
                   'action_to': str(member.id), 
-                  'reply_on_chat_id': '0',
-                  'reply_on_id': '0',
-                  'message_chat_id': '0',
                   'message_id': str(action.id),
                   'time': action.date
                 }
@@ -130,9 +123,20 @@ async def main():
             if action.text:
               sender_username = f"@{action.from_user.username}" if action.from_user.username else "Без имени"
               print(f"Сообщение от {sender_username}: '{action.text}' {action.date.strftime('%Y-%m-%d %H:%M:%S')}")
-              new_action={'chat_id': str(chat.id), 'action': TgActionEnum.message, 'action_from': str(action.from_user.id), 'time': action.date}
+              new_action={
+                 'chat_id': str(chat.id), 
+                 'action': TgActionEnum.message, 
+                 'action_from': str(action.from_user.id), 
+                 'message_id': str(action.id),
+                 'time': action.date
+              }
               new_tg_stat={'reaction':'none', 'count': 0}
-              new_tg_message={'id': action.id, 'text': f"{action.text}", 'statistics': action.id}
+              new_tg_message={
+                 'chat_id': str(chat.id),
+                 'id': action.id, 
+                 'text': f"{action.text}", 
+                 'statistics': action.id
+                }
               try:
                 await add_one_action_tg_inter(new_action)
               except Exception as e:
@@ -154,9 +158,7 @@ async def main():
                   'chat_id': str(chat.id), 
                   'action': TgActionEnum.reply, 
                   'action_from': str(action.from_user.id), 
-                  'reply_on_chat_id': (str(action.reply_to_message_id) + ' ' +str(chat.id)),
                   'reply_on_id': str(action.reply_to_message_id),
-                  'message_chat_id': str(str(action.id) + ' ' + str(chat.id)),
                   'message_id': str(action.id),
                   'time': action.date
                 }
@@ -174,9 +176,6 @@ async def main():
                     'chat_id': str(chat.id), 
                     'action': TgActionEnum.reply, 
                     'action_from': str(action.from_user.id), 
-                    'reply_on_chat_id': '',
-                    'reply_on_id': '',
-                    'message_chat_id': '',
                     'message_id': str(action.id),
                     'time': action.date
                   }
@@ -190,9 +189,6 @@ async def main():
                 'chat_id': str(chat.id), 
                 'action': TgActionEnum.react, 
                 'action_from': str(action.from_user.id), 
-                'reply_on_chat_id': '0',
-                'reply_on_id': '0',
-                'message_chat_id': '0',
                 'message_id': str(action.id),
                 'time': action.date
               }
