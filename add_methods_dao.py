@@ -63,7 +63,7 @@ async def add_one_action_tg_interaction(interaction_data: dict, session: AsyncSe
 async def add_one_tg_message(message_data: dict, session: AsyncSession):
     new_mess = await TgGroupMessageDAO.add(session=session,  **message_data)
     print(f"{new_mess.id}")
-    return new_mess.id
+    return new_mess
 
 @connection
 async def add_one_tg_stats(stats_data: dict, session: AsyncSession):
@@ -80,7 +80,6 @@ async def add_one_tg_group(group_data: dict, session: AsyncSession):
 
 async def main():
     dt = datetime.fromisoformat('2023-10-25T15:30:00')
-
     group = {'chat_id':'1', 'chat_name': 'hggg', 'users_count': 4}
     new_group_id = await add_one_tg_group(group_data=group)
 
@@ -90,10 +89,10 @@ async def main():
     statistics = {'reaction_count': {'heart': 3}}
     new_stat_id = await add_one_tg_stats(stats_data=statistics)
 
-    message = {'id':'12', 'text': 'hi', 'statistics': new_stat_id}
-    new_message_id = await add_one_tg_message(message_data=message)
+    message = {'id':'12', 'chat_id': '1', 'text': 'hi', 'statistics': new_stat_id}
+    new_message = await add_one_tg_message(message_data=message)
     
-    tg_action = {'chat_id': new_group_id, 'action': TgActionEnum.message, 'action_from': '11', 'message_id': new_message_id, 'time': dt}
+    tg_action = {'chat_id': new_group_id, 'action': TgActionEnum.message, 'action_from': new_tg_user_id, 'message_id': new_message.id, 'message_chat_id': new_message.chat_id, 'time': dt}
     new_tg_action = await add_one_action_tg_interaction(interaction_data=tg_action)
     print(new_tg_action + ' добавлено')
 
