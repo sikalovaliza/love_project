@@ -144,7 +144,7 @@ class TgGroupMessage(Base):
   __tablename__ = 'tg_groups_messages'
 
   id: Mapped[str]
-  chat_id: Mapped[str]
+  chat_id: Mapped[str] = mapped_column(ForeignKey('tg_groups_stats_last.chat_id'))
   text: Mapped[str] = mapped_column(Text)
   statistics: Mapped[int] = mapped_column(ForeignKey('tg_statistics_last.id'))
 
