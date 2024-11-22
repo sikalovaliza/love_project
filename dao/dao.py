@@ -1,5 +1,5 @@
 from dao.base import BaseDAO
-from models import TgMessage, TgStatistics, User, VkUser, VkInteraction, Post, TgUser, Chat, TgInteraction
+from models import TgGroupMessage, TgStatistics, User, VkUser, VkAction, VkPost, TgUser, TgGroupStats, TgChannelStats, TgUserGroupAction
 
 
 class UserDAO(BaseDAO):
@@ -8,30 +8,26 @@ class UserDAO(BaseDAO):
 class VkUserDAO(BaseDAO):
     model = VkUser
 
+class VkActionDAO(BaseDAO):
+    model = VkAction
 
-class VkInteractionDAO(BaseDAO):
-    model = VkInteraction
-
-
-class PostDAO(BaseDAO):
-    model = Post
-
+class VkPostDAO(BaseDAO):
+    model = VkPost
 
 class TgUserDAO(BaseDAO):
     model = TgUser
 
+class TgGroupStatsDAO(BaseDAO):
+    model = TgGroupStats
 
-class ChatDAO(BaseDAO):
-    model = Chat
-
-
-class TgInteractionDAO(BaseDAO):
-    model = TgInteraction
-
+class TgUserGroupActionDAO(BaseDAO):
+    model = TgUserGroupAction
 
 class TgStatisticsDAO(BaseDAO):
     model = TgStatistics
     
+class TgGroupMessageDAO(BaseDAO):
+    model = TgGroupMessage
 
-class TgMessageDAO(BaseDAO):
-    model = TgMessage
+class TgChannelStatsDAO(BaseDAO):
+    model = TgChannelStats

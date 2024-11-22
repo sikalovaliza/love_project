@@ -1,6 +1,7 @@
 import asyncio
+from datetime import datetime
 from typing import List
-from dao.dao import TgMessageDAO, TgStatisticsDAO, UserDAO, VkUserDAO, VkInteractionDAO, PostDAO, TgUserDAO, ChatDAO, TgInteractionDAO
+from dao.dao import TgStatisticsDAO, UserDAO, VkUserDAO, VkActionDAO, VkPostDAO, TgUserDAO, TgGroupStatsDAO, TgUserGroupActionDAO, TgStatisticsDAO, TgGroupMessageDAO, TgChannelStatsDAO 
 from models import TgStatistics
 from sql_enums import VkActionEnum, TgActionEnum, FamilyStatusEnum, GenderEnum
 from database import connection
@@ -27,53 +28,78 @@ async def add_many_users(users_data: List[dict], session: AsyncSession):
     return user_ilds_list
 
 users = [
-  {'vk_id': 2, 'gender': GenderEnum.female,'full_name': "Анна Смирнова", 'city': "Санкт-Петербург", 'education': "СПбГУ", 'family_status': FamilyStatusEnum.single_female, 'friends': [1, 5], 'groups': ["фотография", "спорт"]},
-  {'vk_id': 1, 'gender': GenderEnum.male, 'full_name': "Иван Иванов", 'city': "Москва", 'education': "МФТИ", 'family_status': FamilyStatusEnum.married_male, 'friends':[2, 3, 4], 'groups':["друзья", "музыка", "путешествия"]}
+  {'vk_id': '2', 'gender': GenderEnum.female,'first_name': "Анна", 'last_name': "Смирнова", 'city': "Санкт-Петербург", 'education': "СПбГУ", 'family_status': FamilyStatusEnum.single_female, 'friends': [1, 5], 'groups': ["фотография", "спорт"]},
+  {'vk_id': '1', 'gender': GenderEnum.male, 'first_name': "Иван", 'last_name': "Иванов", 'city': "Москва", 'education': "МФТИ", 'family_status': FamilyStatusEnum.married_male, 'friends':[2, 3, 4], 'groups':["друзья", "музыка", "путешествия"]}
 ]
 #run(add_many_users(users_data=users))
 
-tg_users = [
-    {'tg_id': 11, 'user_name': "@new_user5"},
-    {'tg_id': 12, 'user_name': "@new_user6"}
-]
-
 @connection
 async def add_many_users_tg_chat(users_data: List[dict], session: AsyncSession):
-    new_users = await ChatDAO.add_many(session=session, instances=users_data)
+    new_users = await TgGroupStatsDAO.add_many(session=session, instances=users_data)
     user_ilds_list = [user.chat_id for user in new_users]
     print(f"Добавлены новые пользователи с ID: {user_ilds_list}")
     return user_ilds_list
 
 @connection
 async def add_many_user_tg(users_data: List[dict], session: AsyncSession):
-    new_users = await ChatDAO.add_many(session=session, instances=users_data)
+    new_users = await TgGroupStatsDAO.add_many(session=session, instances=users_data)
     user_ilds_list = [user.tg_id for user in new_users]
     print(f"{user_ilds_list}")
     return user_ilds_list
 
 @connection
 async def add_one_user_tg(user_data: dict, session: AsyncSession):
-    new_user = await TgUserDAO.add(session=session, **user_data)
+    new_user = await TgUserDAO.add(session=session,  **user_data)
     print(f"{new_user.tg_id}")
     return new_user.tg_id
 
 @connection
-async def add_one_action_tg_inter(user_data: dict, session: AsyncSession):
-    new_user = await TgInteractionDAO.add(session=session, **user_data)
+async def add_one_action_tg_interaction(interaction_data: dict, session: AsyncSession):
+    new_user = await TgUserGroupActionDAO.add(session=session,  **interaction_data)
     print(f"{new_user.chat_id}")
     return new_user.chat_id
 
 @connection
-async def add_one_tg_mess(user_data: dict, session: AsyncSession):
-    new_mess = await TgMessageDAO.add(session=session, **user_data)
+async def add_one_tg_message(message_data: dict, session: AsyncSession):
+    new_mess = await TgGroupMessageDAO.add(session=session,  **message_data)
     print(f"{new_mess.id}")
     return new_mess.id
 
 @connection
-async def add_one_tg_stat(user_data: dict, session: AsyncSession):
-    new_mess = await TgStatisticsDAO.add(session=session, **user_data)
-    print(f"{new_mess.id}")
-    return new_mess.id
+async def add_one_tg_stats(stats_data: dict, session: AsyncSession):
+    new_stat = await TgStatisticsDAO.add(session=session,  **stats_data)
+    print(f"{new_stat.id}")
+    return new_stat.id
+
+@connection
+async def add_one_tg_group(group_data: dict, session: AsyncSession):
+    new_group = await TgGroupStatsDAO.add(session=session,  **group_data)
+    print(f"{new_group.chat_id}")
+    return new_group.chat_id
+
+
+async def main():
+    dt = datetime.fromisoformat('2023-10-25T15:30:00')
+
+    group = {'chat_id':'1', 'chat_name': 'hggg', 'users_count': 4}
+    new_group_id = await add_one_tg_group(group_data=group)
+
+    tg_user = {'tg_id': '11', 'user_name': "@new_user5", 'first_name': 'Иван', 'last_name': 'Иванов', 'last_online': dt}
+    new_tg_user_id = await add_one_user_tg(user_data=tg_user)
+
+    statistics = {'reaction_count': {'heart': 3}}
+    new_stat_id = await add_one_tg_stats(stats_data=statistics)
+
+    message = {'id':'12', 'text': 'hi', 'statistics': new_stat_id}
+    new_message_id = await add_one_tg_message(message_data=message)
+    
+    tg_action = {'chat_id': new_group_id, 'action': TgActionEnum.message, 'action_from': '11', 'message_id': new_message_id, 'time': dt}
+    new_tg_action = await add_one_action_tg_interaction(interaction_data=tg_action)
+    print(new_tg_action + ' добавлено')
+
+asyncio.run(main())
+
+
 
 #run(add_many_users_tg(users_data=tg_users, dao=TgUserDAO))
 

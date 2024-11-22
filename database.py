@@ -14,7 +14,6 @@ class Base(AsyncAttrs, DeclarativeBase):
     __abstract__ = True 
 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
 
     def to_dict(self) -> dict:
         """Универсальный метод для конвертации объекта SQLAlchemy в словарь"""
@@ -34,7 +33,7 @@ def connection(method):
 
     return wrapper
 
-'''def trigger_to_hist_table(table_name_last: str, column_names: set):
+def trigger_to_hist_table(table_name_last: str, column_names: set):
     table_name_hist = table_name_last.replace('_last', '_hist')
     return text(f"""
                 CREATE OR REPLACE TRIGGER {table_name_last}_to_hist_table
@@ -57,4 +56,4 @@ async def create_triggers():
             columns = {column.name for column in table.columns} - {'id'}
             await connection.execute(trigger_to_hist_table(table_name_last=name, column_names=columns))
 
-asyncio.run(create_triggers())'''
+#asyncio.run(create_triggers())

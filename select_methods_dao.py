@@ -1,4 +1,4 @@
-from dao.dao import UserDAO, VkUserDAO, VkInteractionDAO, PostDAO, TgUserDAO, ChatDAO, TgInteractionDAO
+from dao.dao import TgMessageDAO, TgStatisticsDAO, UserDAO, VkUserDAO, VkActionDAO, VkPostDAO, TgUserDAO, TgGroupStatsDAO, TgUserGroupActionDAO, TgStatisticsDAO, TgGroupMessageDAO, TgChannelStatsDAO
 from database import connection
 from asyncio import run
 @connection
