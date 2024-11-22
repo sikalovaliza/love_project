@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import JSON, BigInteger, DateTime, ForeignKey, ForeignKeyConstraint, Text, Integer, String, ARRAY
+from sqlalchemy import JSON, BigInteger, CheckConstraint, DateTime, ForeignKey, ForeignKeyConstraint, PrimaryKeyConstraint, Text, Integer, String, ARRAY, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Base
 from sql_enums import VkActionEnum, TgActionEnum, FamilyStatusEnum, GenderEnum
@@ -143,9 +143,14 @@ class TgStatisticsHist(Base):
 class TgGroupMessage(Base):
   __tablename__ = 'tg_groups_messages'
 
-  id: Mapped[str] = mapped_column(primary_key=True)
+  id: Mapped[str]
+  chat_id: Mapped[str]
   text: Mapped[str] = mapped_column(Text)
   statistics: Mapped[int] = mapped_column(ForeignKey('tg_statistics_last.id'))
+
+  __table_args__ = (
+    PrimaryKeyConstraint('id', 'chat_id', name='uniq_message'),
+  )
   
 class TgUserGroupAction(Base):
   __tablename__ = 'tg_users_groups_actions'
@@ -155,9 +160,34 @@ class TgUserGroupAction(Base):
   action: Mapped[TgActionEnum]
   action_from: Mapped[str] = mapped_column(ForeignKey('tg_users_last.tg_id'))
   action_to: Mapped[str | None] = mapped_column(ForeignKey('tg_users_last.tg_id'))
-  reply_on: Mapped[int | None] = mapped_column(ForeignKey('tg_groups_messages.id'))
-  message_id: Mapped[int | None] = mapped_column(ForeignKey('tg_groups_messages.id'))
+  reply_on_id: Mapped[str | None]
+  reply_on_chat_id: Mapped[str | None]
+  message_id: Mapped[str | None]
+  message_chat_id: Mapped[str | None]
   time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+  __table_args__ = (
+    ForeignKeyConstraint(
+      ['message_chat_id', 'message_id'],
+      ['tg_groups_messages.chat_id', 'tg_groups_messages.id'],
+      name="fk_message_ids"
+    ),
+    ForeignKeyConstraint(
+      ['reply_on_chat_id', 'reply_on_id'],
+      ['tg_groups_messages.chat_id', 'tg_groups_messages.id'],
+      name="fk_reply_ids"
+    ),
+    CheckConstraint(
+        "(message_id IS NULL AND message_chat_id IS NULL) OR "
+        "(message_id IS NOT NULL AND message_chat_id IS NOT NULL)",
+        name="check_message_ids_not_null"
+    ),
+    CheckConstraint(
+        "(reply_on_id IS NULL AND reply_on_chat_id IS NULL) OR "
+        "(reply_on_id IS NOT NULL AND reply_on_chat_id IS NOT NULL)",
+        name="check_reply_ids_not_null"
+    ),
+  )
 
 '''
 class TgStatistics(Base):

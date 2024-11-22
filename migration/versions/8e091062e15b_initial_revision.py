@@ -1,8 +1,8 @@
 """Initial revision
 
-Revision ID: 2f4e4b0f4517
+Revision ID: 8e091062e15b
 Revises: 
-Create Date: 2024-11-22 17:59:14.822449
+Create Date: 2024-11-22 19:26:06.138499
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '2f4e4b0f4517'
+revision: str = '8e091062e15b'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -89,13 +89,13 @@ def upgrade() -> None:
     sa.Column('vk_id', sa.String(), nullable=False),
     sa.Column('first_name', sa.String(), nullable=False),
     sa.Column('last_name', sa.String(), nullable=False),
-    sa.Column('gender', sa.Enum('female', 'male', name='genderenum'), nullable=False),
+    sa.Column('gender', sa.Enum('female', 'male', name='genderenum', create_type=False), nullable=False),
     sa.Column('birth_date', sa.DateTime(timezone=True), nullable=True),
     sa.Column('city', sa.String(), nullable=True),
     sa.Column('education', sa.String(), nullable=True),
     sa.Column('work_place', sa.String(), nullable=True),
     sa.Column('status', sa.String(), nullable=True),
-    sa.Column('family_status', sa.Enum('not_selected', 'single_female', 'single_male', 'has_boyfriend', 'has_girlfriend', 'engaged_female', 'engaged_male', 'married_female', 'married_male', 'in_love_female', 'in_love_male', 'active_search', 'civil_marriage', name='familystatusenum'), nullable=False),
+    sa.Column('family_status', sa.Enum('not_selected', 'single_female', 'single_male', 'has_boyfriend', 'has_girlfriend', 'engaged_female', 'engaged_male', 'married_female', 'married_male', 'in_love_female', 'in_love_male', 'active_search', 'civil_marriage', name='familystatusenum', create_type=False), nullable=False),
     sa.Column('friends', sa.ARRAY(sa.Integer()), nullable=False),
     sa.Column('groups', sa.ARRAY(sa.String()), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
@@ -105,13 +105,13 @@ def upgrade() -> None:
     sa.Column('vk_id', sa.String(), nullable=False),
     sa.Column('first_name', sa.String(), nullable=False),
     sa.Column('last_name', sa.String(), nullable=False),
-    sa.Column('gender', sa.Enum('female', 'male', name='genderenum'), nullable=False),
+    sa.Column('gender', sa.Enum('female', 'male', name='genderenum', create_type=False), nullable=False),
     sa.Column('birth_date', sa.DateTime(timezone=True), nullable=True),
     sa.Column('city', sa.String(), nullable=True),
     sa.Column('education', sa.String(), nullable=True),
     sa.Column('work_place', sa.String(), nullable=True),
     sa.Column('status', sa.String(), nullable=True),
-    sa.Column('family_status', sa.Enum('not_selected', 'single_female', 'single_male', 'has_boyfriend', 'has_girlfriend', 'engaged_female', 'engaged_male', 'married_female', 'married_male', 'in_love_female', 'in_love_male', 'active_search', 'civil_marriage', name='familystatusenum'), nullable=False),
+    sa.Column('family_status', sa.Enum('not_selected', 'single_female', 'single_male', 'has_boyfriend', 'has_girlfriend', 'engaged_female', 'engaged_male', 'married_female', 'married_male', 'in_love_female', 'in_love_male', 'active_search', 'civil_marriage', name='familystatusenum', create_type=False), nullable=False),
     sa.Column('friends', sa.ARRAY(sa.Integer()), nullable=False),
     sa.Column('groups', sa.ARRAY(sa.String()), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
@@ -119,11 +119,12 @@ def upgrade() -> None:
     )
     op.create_table('tg_groups_messages',
     sa.Column('id', sa.String(), nullable=False),
+    sa.Column('chat_id', sa.String(), nullable=False),
     sa.Column('text', sa.Text(), nullable=False),
     sa.Column('statistics', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['statistics'], ['tg_statistics_last.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id', 'chat_id', name='uniq_message')
     )
     op.create_table('users',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -137,18 +138,22 @@ def upgrade() -> None:
     op.create_table('tg_users_groups_actions',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('chat_id', sa.String(), nullable=False),
-    sa.Column('action', sa.Enum('tag', 'react', 'message', 'add_user', 'reply', 'delete', 'forward', name='tgactionenum'), nullable=False),
+    sa.Column('action', sa.Enum('tag', 'react', 'message', 'add_user', 'reply', 'delete', 'forward', name='tgactionenum', create_type=False), nullable=False),
     sa.Column('action_from', sa.String(), nullable=False),
     sa.Column('action_to', sa.String(), nullable=True),
-    sa.Column('reply_on', sa.String(), nullable=True),
+    sa.Column('reply_on_id', sa.String(), nullable=True),
+    sa.Column('reply_on_chat_id', sa.String(), nullable=True),
     sa.Column('message_id', sa.String(), nullable=True),
+    sa.Column('message_chat_id', sa.String(), nullable=True),
     sa.Column('time', sa.DateTime(timezone=True), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.CheckConstraint('(message_id IS NULL AND message_chat_id IS NULL) OR (message_id IS NOT NULL AND message_chat_id IS NOT NULL)', name='check_message_ids_not_null'),
+    sa.CheckConstraint('(reply_on_id IS NULL AND reply_on_chat_id IS NULL) OR (reply_on_id IS NOT NULL AND reply_on_chat_id IS NOT NULL)', name='check_reply_ids_not_null'),
     sa.ForeignKeyConstraint(['action_from'], ['tg_users_last.tg_id'], ),
     sa.ForeignKeyConstraint(['action_to'], ['tg_users_last.tg_id'], ),
     sa.ForeignKeyConstraint(['chat_id'], ['tg_groups_stats_last.chat_id'], ),
-    sa.ForeignKeyConstraint(['message_id'], ['tg_groups_messages.id'], ),
-    sa.ForeignKeyConstraint(['reply_on'], ['tg_groups_messages.id'], ),
+    sa.ForeignKeyConstraint(['message_chat_id', 'message_id'], ['tg_groups_messages.chat_id', 'tg_groups_messages.id'], name='fk_message_ids'),
+    sa.ForeignKeyConstraint(['reply_on_chat_id', 'reply_on_id'], ['tg_groups_messages.chat_id', 'tg_groups_messages.id'], name='fk_reply_ids'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('vk_posts_hist',
@@ -175,7 +180,7 @@ def upgrade() -> None:
     op.create_table('vk_actions',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('post_id', sa.Integer(), nullable=False),
-    sa.Column('action', sa.Enum('like', 'comment', 'post', name='vkactionenum'), nullable=False),
+    sa.Column('action', sa.Enum('like', 'comment', 'post', name='vkactionenum', create_type=False), nullable=False),
     sa.Column('action_from', sa.String(), nullable=False),
     sa.Column('action_to', sa.String(), nullable=True),
     sa.Column('text', sa.Text(), nullable=True),
