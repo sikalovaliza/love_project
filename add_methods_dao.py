@@ -79,7 +79,7 @@ async def add_one_tg_group(group_data: dict, session: AsyncSession):
 
 
 async def main():
-    dt = datetime.fromisoformat('2023-10-25T15:30:00')
+    '''dt = datetime.fromisoformat('2023-10-25T15:30:00')
     group = {'chat_id':'1', 'chat_name': 'hggg', 'users_count': 4}
     new_group_id = await add_one_tg_group(group_data=group)
 
@@ -103,4 +103,4 @@ asyncio.run(main())
 #run(add_many_users_tg(users_data=tg_users, dao=TgUserDAO))
 
 #chats = [{'chat_id': 3, 'chat_name': 'new', 'users_count' : 5}]
-#run(add_many_users_tg_chat(users_data=chats))
+#run(add_many_users_tg_chat(users_data=chats))'''
