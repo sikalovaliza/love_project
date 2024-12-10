@@ -16,7 +16,7 @@ API_HASH = os.getenv('API_HASH')
 API_ID = os.getenv('API_ID')
 
 chats = [
-  'chatindustrialbioinformatics'
+  'chatmy'
 ]
 
 app = Client(

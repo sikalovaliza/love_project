@@ -1,7 +1,9 @@
 from typing import List, Any, Dict
-from sqlalchemy import select
+from sqlalchemy import func, or_, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from sql_enums import TgActionEnum
 
 class BaseDAO:
     model = None
@@ -43,3 +45,41 @@ class BaseDAO:
         query = select(cls.model).filter(cls.model.id == id_value)  # Предполагается, что поле id существует
         result = await session.execute(query)
         return result.scalar_one_or_none()
+    
+    @classmethod
+    async def aggregate_user_activity(cls, session: AsyncSession, action_from: str, window = 'week'):
+        query = (
+            select(
+                func.count(cls.model.id).label('count'),
+                func.date_trunc(window, cls.model.time).label(window)
+            )
+            .filter(cls.model.action_from == action_from)
+            .group_by(window)
+            .order_by(window)
+        )
+
+        result = await session.execute(query)
+        aggregated_records = result.all()
+
+        return aggregated_records
+    
+    @classmethod
+    async def get_messages_with_time(cls, session: AsyncSession, action_from: str, window = 'week'):
+        query = (
+            select(
+                cls.model.message_id,
+                cls.model.message_chat_id,
+                func.date_trunc(window, cls.model.time).label(window)
+            )
+            .filter(
+                cls.model.action_from == action_from,
+                or_(cls.model.action == TgActionEnum.message, cls.model.action == TgActionEnum.reply)
+            )
+            .group_by(window, cls.model.message_id, cls.model.message_chat_id)
+            .order_by(window)
+        )
+
+        result = await session.execute(query)
+        messages = result.all()
+
+        return messages
